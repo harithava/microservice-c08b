@@ -2,15 +2,27 @@ server:
   port: 8000
 
 spring:
+  application:
+    name: gateway
   cloud:
+    loadbalancer:
+      ribbon:
+#        Not needed since we excluded the dependency but
+#        Still good to add it here for better readability
+        enabled: false
+    consul:
+      enabled: true
+      discovery:
+#        Get only services that are passing the health check
+        query-passing: true
     gateway:
       routes:
         - id: multiplication
-          uri: http://localhost:8080/
+          uri: lb://multiplication/
           predicates:
             - Path=/challenges/**, /attempts, /attempts/**, /users/**
         - id: gamification
-          uri: http://localhost:8081/
+          uri: lb://gamification/
           predicates:
             - Path=/leaders
       globalcors:
@@ -23,6 +35,13 @@ spring:
               - "GET"
               - "POST"
               - "OPTIONS"
+#      default-filters:
+#        - name: Retry
+#          args:
+#            retries: 3
+#            methods: GET, POST
+
+
 
 #logging:
 #  level:
